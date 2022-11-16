@@ -1,9 +1,49 @@
 ﻿@page "/"
+@using LearnBlazorFileUpload.Services;
+@inject IFileUpload fileUpload;
 
-<PageTitle>Index</PageTitle>
+<div class="col-6">
+    <h1>File upload in Blazor</h1>
+    <div class="form-group">
+        <InputFile OnChange="OnInputFileChange" multiple />
+        <button class="btn btn-sm btn-success" type="button" @onclick="UploadFiles">Upload</button>
+        <br />
+    </div>
+    <br />
+    <label>@labelText</label>
+</div>
 
-<h1>Hello, world!</h1>
+@code {
+    IReadOnlyList<IBrowserFile> selectedFiles;
 
-Welcome to your new app.
+    private string labelText = "";
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFiles = new List<IBrowserFile>();
+        selectedFiles = e.GetMultipleFiles();
+    }
+
+
+    private async Task UploadFiles()
+    {
+
+        try
+        {
+            if (selectedFiles is not null)
+            {
+                foreach (var file in selectedFiles)
+                {
+                    await fileUpload.UploadFile(file);
+                }
+                labelText = $"Upload of {selectedFiles.Count} files successful";
+            }
+
+        } catch(Exception e)
+        {
+            labelText = $"Upload failed due to {e.Message}";
+        }
+
+    }
+
+}
