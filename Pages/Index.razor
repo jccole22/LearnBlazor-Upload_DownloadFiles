@@ -8,12 +8,30 @@
         <InputFile OnChange="OnInputFileChange" multiple />
         <button class="btn btn-sm btn-success" type="button" @onclick="UploadFiles">Upload</button>
         <br />
+        <br />
+        @{
+            var progressCss = "progress" + (displayProgress ? "" : "d-none");
+            var progressWidthStyle = progressPercent + "%";
+        }
+        <div class="@progressCss">
+            <div class="progress-bar" role="progressbar" style="width:@progressWidthStyle" area-value="@progressPercent" area-minvalue="0" area-maxvalue="100">
+                
+            </div>
+            
+        </div>
+        @if (displayProgress)
+        {
+            <a class="btn btn-sm btn-primary mt-2" @onclick="RemoveBar">Done</a>
+        }
     </div>
     <br />
     <label>@labelText</label>
 </div>
 
 @code {
+    private bool displayProgress;
+    private int progressPercent;
+
     IReadOnlyList<IBrowserFile> selectedFiles;
 
     private string labelText = "";
@@ -32,10 +50,19 @@
         {
             if (selectedFiles is not null)
             {
+                var uploaded = 0;
+                displayProgress = true;
+
                 foreach (var file in selectedFiles)
                 {
                     await fileUpload.UploadFile(file);
+                    uploaded++;
+                    progressPercent = (int)(uploaded / selectedFiles.Count *100);
                 }
+
+                // having this here makes it dissappear immediately
+                //Thread.Sleep(3000);
+                //displayProgress = false;
                 labelText = $"Upload of {selectedFiles.Count} files successful";
             }
 
@@ -44,6 +71,11 @@
             labelText = $"Upload failed due to {e.Message}";
         }
 
+    }
+
+    private void RemoveBar()
+    {
+        displayProgress = false;
     }
 
 }
