@@ -5,6 +5,7 @@ namespace LearnBlazorFileUpload.Services
     public interface IFileUpload
     {
         Task UploadFile(IBrowserFile file);
+        Task<string> GeneratePreviewUrl(IBrowserFile file);
     }
 
     public class FileUpload : IFileUpload
@@ -38,6 +39,22 @@ namespace LearnBlazorFileUpload.Services
                     _logger.LogError(e.ToString());
                 }
             }
+        }
+
+        public async Task<string> GeneratePreviewUrl(IBrowserFile file)
+        {
+            if(!file.ContentType.Contains("image"))
+            {
+                if (file.ContentType.Contains("pdf"))
+                {
+                    return "images/pdf_logo.png";
+                }
+            }
+
+            var resizedImage = await file.RequestImageFileAsync(file.ContentType, 100, 100);
+            var buffer = new byte[resizedImage.Size];
+            await resizedImage.OpenReadStream().ReadAsync(buffer);
+            return $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
         }
     }
 }

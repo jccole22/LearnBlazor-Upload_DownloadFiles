@@ -26,6 +26,19 @@
     </div>
     <br />
     <label>@labelText</label>
+    @if (previewImages.Count > 0){
+        <h3>Selected Image Files</h3>
+        <div class="card">
+            <div class="row align-items-start">
+                @foreach (var image in previewImages){
+                    <div class="col-2">
+                        <img class="rounded float-left" src="@image" width="100" height="100"/>
+                    </div>
+                }
+            </div>
+        </div>
+
+    }
 </div>
 
 @code {
@@ -34,17 +47,26 @@
 
     IReadOnlyList<IBrowserFile> selectedFiles;
 
+    private IList<string> previewImages = new List<string>();
+
+
     private string labelText = "";
 
-    private void OnInputFileChange(InputFileChangeEventArgs e)
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         selectedFiles = new List<IBrowserFile>();
         selectedFiles = e.GetMultipleFiles();
+        foreach(var file in selectedFiles)
+        {
+            var imageURL = await fileUpload.GeneratePreviewUrl(file);
+            previewImages.Add(imageURL);
+        }
     }
 
 
     private async Task UploadFiles()
     {
+
 
         try
         {
